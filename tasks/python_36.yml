@@ -1,0 +1,40 @@
+---
+- name: make build dir
+  file:
+    path="/tmp/build"
+    state=directory
+
+- name: dowload the tar
+  get_url:
+    url="https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tar.xz"
+    dest="/tmp/build/Python-3.6.5.tar.xz"
+    checksum="md5:9f49654a4d6f733ff3284ab9d227e9fd"
+
+- name: unpack python tar
+  unarchive:
+    src="/tmp/build/Python-3.6.5.tar.xz"
+    dest="/tmp/build"
+    copy=no
+
+- name: config python make
+  command: "./configure --enable-optimizations --with-ensurepip=install"
+  args:
+    chdir: "/tmp/build/Python-3.6.5"
+
+- name: compile python
+  become: true
+  command: "{{ item }}"
+  args:
+    chdir: "/tmp/build/Python-3.6.5"
+  with_items:
+    - "make -j8"
+    - "make install altinstall"
+
+
+- name: add new python as default alternative
+  become: true
+  command: "{{ item }}"
+  with_items:
+    - "update-alternatives --install /usr/bin/python python /usr/local/bin/python3.6 50"
+    - "update-alternatives --install /usr/bin/python python /usr/bin/python2.7 40"
+    - "update-alternatives --install /usr/bin/python python /usr/bin/python3.5 30"

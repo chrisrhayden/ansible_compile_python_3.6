@@ -1,0 +1,6 @@
+---
+- name: make a snek
+  hosts: all
+  roles:
+    - .
+
